@@ -1,0 +1,39 @@
+name: Автопроверка Лабораторной №3 (ООП в ИБ)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Проверка репозитория
+      uses: actions/checkout@v4
+
+    - name: Настройка Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Установка зависимостей (mypy, pytest)
+      run: |
+        python -m pip install --upgrade pip
+        pip install mypy pytest
+
+    - name: Подготовка файлов из шаблона
+      run: |
+        if [ -f "advanced_soc_template.py" ] && [ ! -f "advanced_soc.py" ]; then
+          mv advanced_soc_template.py advanced_soc.py
+        fi
+
+    - name: === ПРОВЕРКА АННОТАЦИЙ ТИПОВ (mypy) ===
+      run: |
+        mypy --disallow-untyped-defs advanced_soc.py
+
+    - name: === ЗАПУСК ЮНИТ-ТЕСТОВ (pytest / unittest) ===
+      run: |
+        python -m unittest test_advanced_soc.py -v
